@@ -1,5 +1,5 @@
 # your-trigger-repo/.github/workflows/daily-auto-trigger.yml
-name: Daily Auto Trigger GKI_SukiSU_SUSFS Build (No setup-gh Action)
+name: Daily Auto Trigger GKI_SukiSU_SUSFS Build
 
 on:
   schedule:

@@ -1,4 +1,5 @@
-name: Daily Auto Trigger GKI_SukiSU_SUSFS Build
+# your-trigger-repo/.github/workflows/daily-auto-trigger.yml
+name: Daily Auto Trigger GKI_SukiSU_SUSFS Build (No setup-gh Action)
 
 on:
   schedule:
@@ -24,20 +25,9 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup GitHub CLI
-        uses: actions/setup-gh@v1
-        with:
-          # 这个 PAT (Personal Access Token) 必须对 MiRinFork/GKI_SukiSU_SUSFS 仓库有 'repo' 权限。
-          token: ${{ secrets.PAT_FOR_GKI_TRIGGER }}
-
       - name: Trigger GKI Build Workflow with Default Inputs
         run: |
           # 构建要传递给 workflow_dispatch 的输入参数
-          # 所有 boolean 类型的参数，由于 default 为 true，所以传入 true
-          # kernelsu_variant 传入 SukiSU
-          # kernelsu_branch 传入 Dev
-          # kernelsu_branch_other 传入空字符串 (默认值)
-
           INPUT_PARAMS=""
           INPUT_PARAMS="${INPUT_PARAMS} -f build_a12_510=true"
           INPUT_PARAMS="${INPUT_PARAMS} -f build_a13_510=true"
@@ -48,18 +38,19 @@ jobs:
           INPUT_PARAMS="${INPUT_PARAMS} -f make_release=true"
           INPUT_PARAMS="${INPUT_PARAMS} -f kernelsu_variant=SukiSU"
           INPUT_PARAMS="${INPUT_PARAMS} -f kernelsu_branch=Dev"
-          INPUT_PARAMS="${INPUT_PARAMS} -f kernelsu_branch_other=\"\"" # 即使是空字符串也需要显式传入
+          INPUT_PARAMS="${INPUT_PARAMS} -f kernelsu_branch_other=\"\""
 
           # 打印即将执行的命令，方便调试
           echo "Triggering ${{ env.TARGET_WORKFLOW_FILENAME }} in ${{ env.TARGET_REPO_OWNER }}/${{ env.TARGET_REPO_NAME }} on branch ${{ env.TARGET_WORKFLOW_BRANCH }}"
           echo "With inputs: ${INPUT_PARAMS}"
 
-          # 执行 gh workflow run 命令
+          # 执行 gh workflow run 命令。GH_TOKEN 环境变量会自动被 gh CLI 识别用于认证。
           gh workflow run "${{ env.TARGET_WORKFLOW_FILENAME }}" \
             --repo "${{ env.TARGET_REPO_OWNER }}/${{ env.TARGET_REPO_NAME }}" \
             --ref "${{ env.TARGET_WORKFLOW_BRANCH }}" \
             ${INPUT_PARAMS}
 
         env:
-          # 将你的 PAT_FOR_GKI_TRIGGER Secret 映射到 GH_TOKEN 环境变量，供 gh CLI 使用
+          # 将你的 PAT_FOR_GKI_TRIGGER Secret 映射到 GH_TOKEN 环境变量。
+          # gh CLI 会自动使用这个环境变量进行认证。
           GH_TOKEN: ${{ secrets.PAT_FOR_GKI_TRIGGER }}

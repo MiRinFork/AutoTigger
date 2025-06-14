@@ -1,0 +1,65 @@
+name: Daily Auto Trigger GKI_SukiSU_SUSFS Build
+
+on:
+  schedule:
+    # 每天新加坡时间 00:00 (UTC+8) 触发
+    # 转换为 UTC 时间：00:00 - 8小时 = 前一天的 16:00 UTC
+    - cron: "0 16 * * *" # 每天 UTC 时间 16:00 触发
+
+  # 添加 workflow_dispatch 以便手动测试触发
+  workflow_dispatch:
+
+jobs:
+  trigger-gki-build:
+    runs-on: ubuntu-latest
+
+    env:
+      # 目标仓库的信息
+      TARGET_REPO_OWNER: MiRinFork
+      TARGET_REPO_NAME: GKI_SukiSU_SUSFS
+      TARGET_WORKFLOW_FILENAME: build-kernel-release.yml # 目标 workflow 的文件名
+      TARGET_WORKFLOW_BRANCH: dev # 目标 workflow 所在的分支
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup GitHub CLI
+        uses: actions/setup-gh@v1
+        with:
+          # 这个 PAT (Personal Access Token) 必须对 MiRinFork/GKI_SukiSU_SUSFS 仓库有 'repo' 权限。
+          token: ${{ secrets.PAT_FOR_GKI_TRIGGER }}
+
+      - name: Trigger GKI Build Workflow with Default Inputs
+        run: |
+          # 构建要传递给 workflow_dispatch 的输入参数
+          # 所有 boolean 类型的参数，由于 default 为 true，所以传入 true
+          # kernelsu_variant 传入 SukiSU
+          # kernelsu_branch 传入 Dev
+          # kernelsu_branch_other 传入空字符串 (默认值)
+
+          INPUT_PARAMS=""
+          INPUT_PARAMS="${INPUT_PARAMS} -f build_a12_510=true"
+          INPUT_PARAMS="${INPUT_PARAMS} -f build_a13_510=true"
+          INPUT_PARAMS="${INPUT_PARAMS} -f build_a13_515=true"
+          INPUT_PARAMS="${INPUT_PARAMS} -f build_a14_515=true"
+          INPUT_PARAMS="${INPUT_PARAMS} -f build_a14_61=true"
+          INPUT_PARAMS="${INPUT_PARAMS} -f build_a15_66=true"
+          INPUT_PARAMS="${INPUT_PARAMS} -f make_release=true"
+          INPUT_PARAMS="${INPUT_PARAMS} -f kernelsu_variant=SukiSU"
+          INPUT_PARAMS="${INPUT_PARAMS} -f kernelsu_branch=Dev"
+          INPUT_PARAMS="${INPUT_PARAMS} -f kernelsu_branch_other=\"\"" # 即使是空字符串也需要显式传入
+
+          # 打印即将执行的命令，方便调试
+          echo "Triggering ${{ env.TARGET_WORKFLOW_FILENAME }} in ${{ env.TARGET_REPO_OWNER }}/${{ env.TARGET_REPO_NAME }} on branch ${{ env.TARGET_WORKFLOW_BRANCH }}"
+          echo "With inputs: ${INPUT_PARAMS}"
+
+          # 执行 gh workflow run 命令
+          gh workflow run "${{ env.TARGET_WORKFLOW_FILENAME }}" \
+            --repo "${{ env.TARGET_REPO_OWNER }}/${{ env.TARGET_REPO_NAME }}" \
+            --ref "${{ env.TARGET_WORKFLOW_BRANCH }}" \
+            ${INPUT_PARAMS}
+
+        env:
+          # 将你的 PAT_FOR_GKI_TRIGGER Secret 映射到 GH_TOKEN 环境变量，供 gh CLI 使用
+          GH_TOKEN: ${{ secrets.PAT_FOR_GKI_TRIGGER }}

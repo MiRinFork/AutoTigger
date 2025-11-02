@@ -1,5 +1,5 @@
 # your-trigger-repo/.github/workflows/daily-auto-trigger.yml
-name: Daily Auto Trigger GKI_SukiSU_SUSFS Build
+name: Sultan_KSU_workflow
 
 on:
   schedule:
@@ -16,9 +16,9 @@ jobs:
     env:
       # 目标仓库的信息
       TARGET_REPO_OWNER: MiRinFork
-      TARGET_REPO_NAME: GKI_SukiSU_SUSFS
+      TARGET_REPO_NAME: Sultan_KSU_workflow
       TARGET_WORKFLOW_FILENAME: build-kernel-release.yml # 目标 workflow 的文件名
-      TARGET_WORKFLOW_BRANCH: dev # 目标 workflow 所在的分支
+      TARGET_WORKFLOW_BRANCH: main # 目标 workflow 所在的分支
 
     steps:
       - name: Checkout Code
@@ -28,16 +28,6 @@ jobs:
         run: |
           # 构建要传递给 workflow_dispatch 的输入参数
           INPUT_PARAMS=""
-          INPUT_PARAMS="${INPUT_PARAMS} -f build_a12_510=true"
-          INPUT_PARAMS="${INPUT_PARAMS} -f build_a13_510=true"
-          INPUT_PARAMS="${INPUT_PARAMS} -f build_a13_515=true"
-          INPUT_PARAMS="${INPUT_PARAMS} -f build_a14_515=true"
-          INPUT_PARAMS="${INPUT_PARAMS} -f build_a14_61=true"
-          INPUT_PARAMS="${INPUT_PARAMS} -f build_a15_66=true"
-          INPUT_PARAMS="${INPUT_PARAMS} -f make_release=true"
-          INPUT_PARAMS="${INPUT_PARAMS} -f kernelsu_variant=SukiSU"
-          INPUT_PARAMS="${INPUT_PARAMS} -f kernelsu_branch=Dev"
-          INPUT_PARAMS="${INPUT_PARAMS} -f kernelsu_branch_other=\"\""
 
           # 打印即将执行的命令，方便调试
           echo "Triggering ${{ env.TARGET_WORKFLOW_FILENAME }} in ${{ env.TARGET_REPO_OWNER }}/${{ env.TARGET_REPO_NAME }} on branch ${{ env.TARGET_WORKFLOW_BRANCH }}"
